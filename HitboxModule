@@ -1,0 +1,80 @@
+local RunService = game:GetService("RunService") -- sorry if this is to much
+local WeaponDataModule = require(script.Parent)
+
+local debounce = false
+
+local hitboxModule = {}
+
+function hitboxModule:CreateHitBox(Player, Handle)
+
+	local char = Player.Character or Player.CharacterAdded:Wait() -- this gets the character
+	local humanoidRootPart = char:FindFirstChild("HumanoidRootPart") -- this is so we can edit the distance and where the hitbox spawns
+
+	task.spawn(function()
+		if debounce == true then return end
+		debounce = true
+		local hitbox = Instance.new("Part") -- this creates the hitbox -- you can make this a circle, or a cylinder, or whatever you want
+		hitbox.Name = "Hitbox"
+		hitbox.Size = Vector3.new(5,5,5) -- this edits the size
+		hitbox.CanCollide = false -- dont change this
+		hitbox.Anchored = true -- dont change this
+		--hitbox.Rotation = handle.Rotation  -- you can use this but i wouldnt recommend it
+
+		local direction = humanoidRootPart.CFrame.LookVector
+		local distance = 3 -- this is the distance from the character -- this is in studs
+		local position = humanoidRootPart.Position + direction * distance -- this is the position
+
+		hitbox.Position = position -- position = humanoidRootPart.Position + direction * 3 -- this is the position
+
+		if RunService:IsStudio() then
+			hitbox.Transparency = 0.5 -- for testing
+			hitbox.Color = Color3.fromRGB(255, 0, 0)
+		else
+			hitbox.Transparency = 1 -- you can edit this to your preference
+		end
+
+		local createAnim = Instance.new("Animation")
+		createAnim.Parent = hitbox
+		createAnim.AnimationId = WeaponDataModule[Handle.Parent.Name].AnimId
+
+		local anim = char.Humanoid:LoadAnimation(createAnim)
+		anim:Play()
+
+		hitbox.Parent = workspace.Hitbox -- Hitbox is a folder
+
+		local sound = Instance.new("Sound") -- this creates a sound
+		sound.Parent = Handle
+		sound.SoundId = WeaponDataModule[Handle.Parent.Name].Sound
+		sound:Play()
+
+		local damaged = {}
+		local hitdb = false
+		hitbox.Touched:Connect(function(hit)
+			if hitdb == true then return end
+			hitdb = true
+			task.spawn(function()
+				local humanoid = hit.Parent:FindFirstChild("Humanoid")
+				if humanoid then
+					if damaged[hit.Parent.Name] then
+						--enemy has already hurt so nothing will happen at all
+					else
+						if humanoid and hit.Parent.Name ~= Player.Name then
+							table.insert(damaged, hit.Parent.Name)
+							humanoid:TakeDamage(WeaponDataModule[Handle.Parent.Name].Damage)
+							-- humanoid.LastHit.Value = Player.Name (Soon Dont add yet)
+						end
+					end
+				end
+				task.wait(0.1)
+				hitdb = false
+			end)
+		end)
+		task.wait(0.1)
+		hitbox:Destroy()
+		task.wait(WeaponDataModule[Handle.Parent.Name].Cooldown)
+		sound:Destroy()
+		debounce = false
+	end)
+end
+
+return hitboxModule -- basic Hitbox module
