@@ -1,0 +1,12 @@
+local WeaponDataModule = {
+	["Staff"] = {
+		Name = "Staff", -- name of Weapon (Tool)
+		Damage = 5, -- damage
+		Cooldown = 1, -- cooldown pretty understandable
+		AnimId = "rbxassetid://129902479178101", -- Animation to play
+		Sound = "rbxassetid://85548035864026" -- sound to play
+	},
+	-- you can add more weapons down here
+}
+
+return WeaponDataModule
