@@ -1,0 +1,31 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+
+local ModulesFolder = ReplicatedStorage.Modules
+local WeaponDataModule = require(ModulesFolder.WeaponDataModule)
+local HitboxModule = require(ModulesFolder.WeaponDataModule.HitboxModule)
+
+local function SetupStats(Player)
+	local StatsFolder = Instance.new("Folder")
+	StatsFolder.Parent = Players
+	StatsFolder.Name = "PlayerStats"
+	
+	-- i will add more stats later for example.. "XP (Levels System)"
+end
+
+Players.PlayerAdded:Connect(function(Player)
+	task.wait(2)
+	for i, Tool in pairs(ReplicatedStorage.Assets.Weapons:GetChildren()) do -- this adds the weapons to the player's backpack (like starter pack) but we will remove this soon because we will Have a Inventory System
+		if Tool:IsA("Tool") then
+			local Weapon = Tool:Clone()
+			Weapon.Parent = Player.Backpack
+			Weapon.Name = WeaponDataModule[Tool.Name].Name
+			
+			Weapon.Activated:Connect(function()
+				HitboxModule:CreateHitBox(Player, Weapon:FindFirstChild("Handle"))
+			end)
+		end
+	end
+	
+	SetupStats(Player)
+end)
